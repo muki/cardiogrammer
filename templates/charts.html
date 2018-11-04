@@ -29,46 +29,5 @@
       strokeWidth: 2,
     }
   );
-
-
-  // Smooth line plotter
-  var functionData = [];
-  var vs = [10, 20, 40, 0, 30, 15, 25, 60, 35, 45];
-  for (var i = 0; i < 10; i++) {
-    var v = vs[i];
-    functionData.push([i, v, v]);
-  }
-
-  var g6;
-
-  function drawSmoothPlot() {
-    g6 = new Dygraph(document.getElementById('smooth-line'),
-      functionData, {
-        series: {
-          Straight: {
-            color: 'rgba(0,0,0,0.33)',
-            strokeWidth: 2,
-            drawPoints: true,
-            pointSize: 3
-          },
-          Smoothed: {
-            plotter: smoothPlotter,
-            color: 'red',
-            strokeWidth: 2
-          }
-        },
-        legend: 'always',
-        gridLineColor: '#ddd'
-      });
-  }
-  drawSmoothPlot();
-
-  var smoothRangeEl = document.getElementById('smoothing-amount');
-  smoothRangeEl.addEventListener('input', function() {
-    var param = parseFloat(smoothRangeEl.value);
-    smoothPlotter.smoothing = param;
-    document.getElementById('smoothing-param').innerHTML = param;
-    drawSmoothPlot();
-  });
 </script>
 {% endblock %}

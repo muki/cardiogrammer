@@ -6,10 +6,8 @@ from models import Measurement, Gram
 from views import blueprint
 
 def create_app(env_name):
-  # print(app_config[env_name])
-  # print(env_name)
   app = Flask(__name__)
-  app.config.from_object(app_config['development'])
+  app.config.from_object(app_config[env_name])
 
   @app.route('/', methods=['GET'])
   def charts():

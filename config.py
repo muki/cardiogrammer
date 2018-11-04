@@ -11,7 +11,7 @@ class Development(Config):
   DEBUG = True
 
 class Production(Config):
-  pass
+  SQLALCHEMY_DATABASE_URI = 'sqlite:///base.db'
 
 app_config = {
   'development': Development,

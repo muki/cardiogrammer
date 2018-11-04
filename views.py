@@ -23,7 +23,6 @@ def twml():
   status_msg = 'SMS prejet, ampak potem je šlo nekaj narobe.'
   the_url = request.args.get('Body')
   the_id = the_url.split('/')[-1]
-  print(the_url, the_id)
 
   if the_url:
     data = requests.get('https://cardiogr.am/heart/cardiograms/%s?no-cache=1' % (the_id)).json()
@@ -32,7 +31,6 @@ def twml():
     slug = data['cardiogram']['vanityUrl']
 
     gram_exists = False if Gram.query.filter_by(slug=slug).count() == 0 else 1
-    print(slug, gram_exists)
 
     if not gram_exists:
       gram = Gram(slug=slug)
@@ -61,7 +59,6 @@ def twml():
 def data():
   ms = Measurement.query.all()
   ms_data = [measurement_schema.dump(m).data for m in ms]
-  print(ms_data)
   return json_response(ms_data, 200)
 
 @blueprint.route('/csv/', methods=['GET'])
@@ -71,6 +68,5 @@ def csv():
 
   for m in ms:
     the_csv += '%s,%d\n' % (m.time.isoformat(), m.heart_rate)
-  
-  print(the_csv)
+
   return Response(the_csv, mimetype='text/csv')
