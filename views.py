@@ -6,7 +6,7 @@ from marshmallow import Schema, fields, pprint
 from flask_sqlalchemy import SQLAlchemy
 
 from models import Measurement, Gram
-from serializers import measurement_schema
+from serializers import measurement_schemas, gram_schemas
 from extensions import db
 
 blueprint = Blueprint('measurements', __name__)
@@ -58,7 +58,7 @@ def twml():
 @blueprint.route('/data/', methods=['GET'])
 def data():
   ms = Measurement.query.all()
-  ms_data = [measurement_schema.dump(m).data for m in ms]
+  ms_data = measurement_schemas.dump(ms)
   return json_response(ms_data, 200)
 
 @blueprint.route('/csv/', methods=['GET'])
@@ -70,3 +70,10 @@ def csv():
     the_csv += '%s,%d\n' % (m.time.isoformat(), m.heart_rate)
 
   return Response(the_csv, mimetype='text/csv')
+
+@blueprint.route('/grams/', methods=['GET'])
+def grams():
+  gs = Gram.query.all()
+  gs_data = gram_schemas.dump(gs)
+
+  return json_response(gs_data, 200)
