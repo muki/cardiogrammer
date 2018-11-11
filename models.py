@@ -22,6 +22,8 @@ class Gram(db.Model):
 
   id = db.Column(db.Integer, primary_key=True)
   slug = db.Column(db.String(128), unique=True, nullable=False)
+  start =  db.Column(db.DateTime, nullable=True)
+  end =  db.Column(db.DateTime, nullable=True)
 
   def __repr__(self):
     return '<Gram %r>' % self.slug

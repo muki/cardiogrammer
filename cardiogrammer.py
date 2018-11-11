@@ -7,7 +7,7 @@ from views import blueprint
 
 def create_app(env_name):
   app = Flask(__name__)
-  app.config.from_object(app_config[env_name])
+  app.config.from_object(app_config['development'])
 
   @app.route('/', methods=['GET'])
   def charts():

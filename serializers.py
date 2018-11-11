@@ -4,6 +4,8 @@ class GramSchema(Schema):
   id = fields.Int(dump_only=True)
   slug = fields.String(dump_only=True)
   url = fields.Function(lambda obj: 'https://cardiogr.am/c/%s?no-cache=1' % obj.slug)
+  start = fields.DateTime(dump_only=True)
+  end = fields.DateTime(dump_only=True)
 
 gram_schema = GramSchema()
 gram_schemas = GramSchema(many=True)

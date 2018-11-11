@@ -1,4 +1,4 @@
-from flask import request, Response, Blueprint, json
+from flask import request, Response, Blueprint, json, stream_with_context
 import requests
 from datetime import datetime
 from time import mktime
@@ -8,6 +8,8 @@ from flask_sqlalchemy import SQLAlchemy
 from models import Measurement, Gram
 from serializers import measurement_schemas, gram_schemas
 from extensions import db
+
+from utils import updateGram
 
 blueprint = Blueprint('measurements', __name__)
 
@@ -25,33 +27,7 @@ def twml():
   the_id = the_url.split('/')[-1]
 
   if the_url:
-    data = requests.get('https://cardiogr.am/heart/cardiograms/%s?no-cache=1' % (the_id)).json()
-
-    line = data['cardiogram']['cards'][0]['song']['lines']['heartRate']['_line']
-    slug = data['cardiogram']['vanityUrl']
-
-    gram_exists = False if Gram.query.filter_by(slug=slug).count() == 0 else 1
-
-    if not gram_exists:
-      gram = Gram(slug=slug)
-      status_msg = 'Nov Cardiogram shranjen.'
-    else:
-      gram = Gram.query.filter_by(slug=slug).first()
-      ms = Measurement.query.with_parent(gram).all()
-      for m in ms:
-        m.delete()
-      db.session.commit()
-
-      status_msg = 'Cardiogram posodobljen.'
-    
-    for l in line:
-      time = datetime.fromtimestamp(l['start'] / 1000)
-      heart_rate = l['value']
-
-      m = Measurement(time=time, heart_rate=heart_rate, gram=gram)
-    
-    db.session.add(gram)
-    db.session.commit()
+    status_msg = updateGram(the_id)
   
   return Response('<Response><Message>%s</Message></Response>' % status_msg, mimetype='text/xml')
 
@@ -77,3 +53,29 @@ def grams():
   gs_data = gram_schemas.dump(gs)
 
   return json_response(gs_data, 200)
+
+@blueprint.route('/grams/update/<slug>', methods=['GET'])
+def update(slug):
+  status_msg = updateGram(slug)
+
+  return Response(status_msg, 200)
+
+@blueprint.route('/grams/update/all', methods=['GET'])
+def updateAll():
+  gs = Gram.query.all()
+
+  def generate():
+    for i, g in enumerate(gs):
+      status_msg = updateGram(g.slug)
+      yield '<p>Updated gram %d of %d. | %s | %s</p>' % (i+1, len(gs), g.slug, status_msg)
+  
+  return Response(stream_with_context(generate()))
+
+@blueprint.route('/grams/update/latest', methods=['GET'])
+def updateLatest():
+  gs = Gram.query.order_by('start desc').limit(1)
+  if gs.count() > 0:
+    status_msg = updateGram(gs[0].slug)
+    return Response('%s | %s' % (gs[0].slug, status_msg))
+  else:
+    return Response('No grams here ...')
