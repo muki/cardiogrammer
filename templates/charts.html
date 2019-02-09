@@ -9,24 +9,86 @@
     top: 0;
     bottom: 0;
   }
+
+  .canvasjs-chart-credit {
+    display: none;
+  }
 </style>
 
 <div id="heartchart"></div>
+<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 
 <script>
-  g = new Dygraph(
-    // containing div
-    document.getElementById('heartchart'),
+  function getJSON(yourUrl) {
+    var Httpreq = new XMLHttpRequest(); // a new request
+    Httpreq.open("GET", yourUrl, false);
+    Httpreq.send(null);
+    return Httpreq.responseText;
+  }
 
-    // path to a CSV file.
-    '/csv',
+  var chart = new CanvasJS.Chart("heartchart", {
+    theme: "light2", // "light1", "light2", "dark1", "dark2"
+    animationEnabled: true,
+    zoomEnabled: true,
+    title: {
+      text: "Muki's heart rate"
+    },
+    data: [{
+      type: "column",
+      dataPoints: []
+    }],
+    axisX: {
+      interval: 60 * 60 * 24,
+      // valueFormatString: "MMM"
+    },
+    axisY: {
+      includeZero: false,
+      title: "Heart rate"
+    },
+  });
 
-    //options
-    {
-      legend: 'always',
-      title: 'muki\'s heart rate',
-      strokeWidth: 2,
+  // addDataPoints(1000);  
+  // JSON.parse(getJSON('https://heart.muki.fyi/data/')).forEach(function(e) {
+  JSON.parse(getJSON('/data/'))[0].forEach(function(e) {
+    if (e.heart_rate !== 140) {
+      var coeff = 1000 * 60 * 2;
+      var date = new Date(e.time);
+      var rounded = new Date(Math.round(date.getTime() / coeff) * coeff)
+      chart.options.data[0].dataPoints.push({
+        x: rounded,
+        y: e.heart_rate,
+      });
     }
-  );
+  });
+  chart.render();
+
+  // data = require('https://heart.muki.fyi/data');
+  // console.log(data);
+  // data[0].forEach(function(e) {
+  //   console.log(e);
+  // });
+  // .slice()
+  // .sort((a, b) => b.frequency - a.frequency)
+  // .map(({letter, frequency}) => ({name: letter, value: frequency}));
+
+  // function chart() {
+  //   const svg = d3.select(DOM.svg(width, height));
+
+  //   svg.append("g")
+  //       .attr("fill", "steelblue")
+  //     .selectAll("rect").data(data).enter().append("rect")
+  //       .attr("x", d => x(d.name))
+  //       .attr("y",   d => y(d.value))
+  //       .attr("height", d => y(0) - y(d.value))
+  //       .attr("width", x.bandwidth());
+
+  //   svg.append("g")
+  //       .call(xAxis);
+
+  //   svg.append("g")
+  //       .call(yAxis);
+
+  //   return svg.node();
+  // }
 </script>
 {% endblock %}
